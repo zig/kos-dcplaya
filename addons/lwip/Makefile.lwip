@@ -105,6 +105,7 @@ SUBDIRS=
 
 all: $(OBJS)
 	rm -f build/*.o
+	mkdir -p build
 	cp -p $(OBJS) build/
 
 include $(KOS_BASE)/Makefile.prefab

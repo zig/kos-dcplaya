@@ -22,6 +22,7 @@ defaultall: $(OBJS) subdirs linklib
 
 linklib:
 	rm -f $(KOS_BASE)/addons/lib/$(KOS_ARCH)/$(TARGET)
+	mkdir -p $(KOS_BASE)/addons/lib/$(KOS_ARCH)/
 	$(KOS_AR) rcs $(KOS_BASE)/addons/lib/$(KOS_ARCH)/$(TARGET) $(OBJS) $(LIB_OBJS)
 
 clean: defaultclean

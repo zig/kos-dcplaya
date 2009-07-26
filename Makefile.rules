@@ -9,18 +9,23 @@
 
 # Build rules
 %.o: %.c
+	mkdir -p `dirname $@`
 	$(KOS_CC) $(KOS_CFLAGS) -c $< -o $@
 
 %.o: %.cc
+	mkdir -p `dirname $@`
 	$(KOS_CCPLUS) $(KOS_CFLAGS) $(KOS_CPPFLAGS) -c $< -o $@
 
 %.o: %.cpp
+	mkdir -p `dirname $@`
 	$(KOS_CCPLUS) $(KOS_CFLAGS) $(KOS_CPPFLAGS) -c $< -o $@
 
 %.o: %.s
+	mkdir -p `dirname $@`
 	$(KOS_AS) $(KOS_AFLAGS) $< -o $@
 
 %.o: %.S
+	mkdir -p `dirname $@`
 	$(KOS_AS) $(KOS_AFLAGS) $< -o $@
 
 subdirs: $(patsubst %, _dir_%, $(SUBDIRS))
