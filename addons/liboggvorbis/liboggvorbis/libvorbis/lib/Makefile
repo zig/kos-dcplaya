@@ -10,6 +10,7 @@ KOS_CFLAGS += -I. -I../include -DLITTLE_ENDIAN=1
 all: libvorbis.a
 libvorbis.a: $(OBJS) 
 	$(KOS_AR) rcs libvorbis.a $(OBJS)
+	mkdir -p ../build
 	cp $(OBJS) ../build
 	cp libvorbis.a ../build
 

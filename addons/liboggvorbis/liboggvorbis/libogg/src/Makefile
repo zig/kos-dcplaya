@@ -11,6 +11,7 @@ CFLAGS += -O2
 all: libogg.a
 libogg.a: $(OBJS)
 	$(KOS_AR) rcs libogg.a $(OBJS)
+	mkdir -p ../build
 	cp $(OBJS) ../build
 	cp libogg.a ../build
 

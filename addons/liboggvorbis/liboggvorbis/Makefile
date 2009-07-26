@@ -12,13 +12,15 @@ all: subdirs liboggvorbis.a
 # Target: liboggvorbis.a -> base library for OggVobis Files
 liboggvorbis.a:
 	-rm -f ./build/*.o
+	mkdir -p build
 	-cp ./libvorbis/build/*.o ./build/
 	-cp ./libogg/build/*.o ./build/
-	# $(KOS_AR) rcs ./lib/liboggvorbis.a ./build/*.o
+#	$(KOS_AR) rcs ./lib/liboggvorbis.a ./build/*.o
 
 # Target: liboggvorbisplay.a -> KOS sndstream decoder library
 liboggvorbisplay.a:
 	-rm -f ./build/*.o
+	mkdir -p build
 	-cp ./libvorbis/build/*.o build/
 	-cp ./libogg/build/*.o build/
 	-cp ../libsndoggvorbis/build/*.o build/
