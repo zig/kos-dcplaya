@@ -14,6 +14,8 @@ fi
 inpfile=$1
 outpfile=$2
 
+mkdir -p `dirname $outpfile`
+
 # Get the list of export names
 names=`cat $inpfile | grep -v '^#' | grep -v '^$' | sort`
 
