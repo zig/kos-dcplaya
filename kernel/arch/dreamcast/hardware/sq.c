@@ -8,6 +8,12 @@
 
 CVSID("$Id: sq.c,v 1.3 2002/02/11 20:00:11 andrewk Exp $");
 
+/* VP : 
+   This is a flag telling us if a thread is currently using store queues.
+   This flag can be used by other threads or by irqs to decide if it is
+   safe to use store queues or not */
+int sq_inuse;
+
 /*
     Functions to clear, copy, and set memory using the sh4 store queues
 

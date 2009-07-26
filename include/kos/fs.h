@@ -199,6 +199,10 @@ ssize_t	fs_copy(const char * src, const char * dst);
    of the loaded buffer, and on failure it is set to NULL. */
 ssize_t fs_load(const char * src, void ** out_ptr);
 
+/* VP : Backward compatibility */
+int fs_handler_add(const char * name, vfs_handler_t * h);
+int fs_handler_remove(vfs_handler_t * h);
+
 /* VFS init */
 int	fs_init();
 void 	fs_shutdown();

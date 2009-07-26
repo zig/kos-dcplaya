@@ -85,6 +85,7 @@ int vmu_draw_lcd(maple_device_t * dev, void *bitmap) {
 	dev->frame.send_buf = send_buf;
 	maple_queue_frame(&dev->frame);
 
+#if 0
 	/* Wait for the LCD to accept it */
 	if (genwait_wait(&dev->frame, "vmu_draw_lcd", 500, NULL) < 0) {
 		if (dev->frame.state != MAPLE_FRAME_VACANT) {
@@ -95,6 +96,7 @@ int vmu_draw_lcd(maple_device_t * dev, void *bitmap) {
 			return MAPLE_ETIMEOUT;
 		}
 	}
+#endif
 	return MAPLE_EOK;
 }
 

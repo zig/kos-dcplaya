@@ -68,6 +68,11 @@ kthread_t *thd_current = NULL;
 /* Thread mode: cooperative or pre-emptive. */
 int thd_mode = THD_MODE_NONE;
 
+/* VP : configurable stack size, you can change this just before
+   you create a thread to have the stack of the size you want ... */
+uint32 thd_default_stack_size = THD_STACK_SIZE;
+
+
 /*****************************************************************************/
 /* Debug */
 #include <kos/dbgio.h>
@@ -283,8 +288,21 @@ kthread_t *thd_create(void (*routine)(void *param), void *param) {
 			memset(nt, 0, sizeof(kthread_t));
 		
 			/* Create a new thread stack */
-			nt->stack = (uint32*)malloc(THD_STACK_SIZE);
-			nt->stack_size = THD_STACK_SIZE;
+			nt->stack = (uint32*)malloc(thd_default_stack_size);
+			nt->stack_size = thd_default_stack_size;
+	
+			/* VP : added exceptions guarding jmp_buf stack */
+			nt->expt_guard_stack_pos = -1;
+
+			/* VP : added prio2 and local jiffies */
+			nt->prio2 = 1;
+			nt->cur_prio2 = 1;
+			nt->jiffies = 0;
+
+			/* VP : local time */
+			thd_current->localtime = 0;
+			thd_current->localtime_ref = 
+			  timer_micro_gettime64();
 	
 			/* Populate the context */
 			params[0] = (uint32)routine;
@@ -435,10 +453,21 @@ void thd_schedule(int front_of_line, uint64 now) {
 	   run queue and switch to it. */
 	thd_remove_from_runnable(thd);
 
+	/* VP : local time update */
+	//thd->localtime_ref = now;
+	thd->localtime_ref = timer_micro_gettime64();
+	if (thd_current)
+	  thd_current->localtime += 
+	    thd->localtime_ref - thd_current->localtime_ref;
+
 	thd_current = thd;
 	thd->state = STATE_RUNNING;
 
+	/* VP : added prio2 */
+	thd_current->cur_prio2 = thd_current->prio2;
+
 	/* Make sure the thread hasn't underrun its stack */
+#if 1
 	if (thd_current->stack && thd_current->stack_size) {
 		if ( CONTEXT_SP(thd_current->context) < (ptr_t)(thd_current->stack) ) {
 			thd_pslist(printf);
@@ -446,6 +475,7 @@ void thd_schedule(int front_of_line, uint64 now) {
 			assert_msg( 0, "Thread stack underrun" );
 		}
 	}
+#endif
 
 	irq_set_context(&thd_current->context);
 }
@@ -455,21 +485,43 @@ void thd_schedule(int front_of_line, uint64 now) {
    interrupt return to jump back to the new thread instead of the one that
    was executing (unless it was already executing). */
 void thd_schedule_next(kthread_t *thd) {
+
 	/* Can't boost a blocked thread */
-	if (thd_current->state != STATE_READY)
+        /* VP : added test thd == thd_current */
+	if (thd == thd_current || thd_current->state != STATE_READY)
 		return;
 
 	/* Unfortunately we have to take care of this here */
+	/* VP : ??? looks like a bug to me, testing zombie state 
+	   of thd_current and then destroy thd ? */
 	if (thd_current->state == STATE_ZOMBIE) {
-		thd_destroy(thd);
+/* 	        panic("strange thread case #1"); */
+/* 		thd_destroy(thd); */
+
+	        /* fixing it */
+	        thd_destroy(thd_current);
+		thd_current = NULL;
 	} else if (thd_current->state == STATE_RUNNING) {
 		thd_current->state = STATE_READY;
 		thd_add_to_runnable(thd_current, 0);
 	}
 
+	/* VP : local time update */
+	thd->localtime_ref = timer_micro_gettime64();
+	if (thd_current)
+	  thd_current->localtime += 
+	    thd->localtime_ref - thd_current->localtime_ref;
+
 	thd_remove_from_runnable(thd);
 	thd_current = thd;
 	thd_current->state = STATE_RUNNING;
+
+	/* VP : added prio2 */
+	thd_current->cur_prio2 = thd_current->prio2;
+
+	/* VP : TEST TEMP */
+/* 	timer_primary_microwakeup(thd_current->prio2*1000000/HZ); */
+
 	irq_set_context(&thd_current->context);
 }
 
@@ -576,8 +628,29 @@ static void thd_timer_hnd(irq_context_t *context) {
 	/* Request a wakeup at the next time we will need to re-schedule. */
 	thd_schedule_switch(now);
 #else
+	/* VP : local jiffies. TODO : use ms_gettime */
+	thd_current->jiffies++;
+
+#if 0
+	/* VP : prio2 support */
 	thd_schedule(0, now);
-	timer_primary_wakeup(1000/HZ);
+	jiffies++;
+	timer_primary_microwakeup(thd_current->prio2*1000000/HZ);
+#else
+	/* VP : prio2 support */
+	if (--thd_current->cur_prio2 <= 0) 
+	{
+	  thd_current->cur_prio2 = 0;
+	  thd_schedule(0, now);
+	}
+
+	jiffies++;
+
+	/* thd_schedule(0, now); */
+
+	timer_primary_microwakeup(1000000/HZ);
+#endif
+
 #endif
 }
 
@@ -690,7 +763,7 @@ int thd_set_mode(int mode) {
 #ifdef JIFFYLESS
 		thd_next_switch = timer_ms_gettime64() + 1000/HZ;
 #endif
-		timer_primary_wakeup(1000/HZ);
+		timer_primary_microwakeup(1000000/HZ);
 	} else {
 #ifdef JIFFYLESS
 		/* Don't do any more pre-empt wakeups */
@@ -746,6 +819,14 @@ int thd_init(int mode) {
 
 	/* Main thread -- the kern thread */
 	thd_current = kern;
+
+	/* VP : added prio2 */
+	thd_current->cur_prio2 = thd_current->prio2;
+
+	/* VP : local time */
+	thd_current->localtime = 0;
+	thd_current->localtime_ref = timer_micro_gettime64();
+
 	irq_set_context(&kern->context);
 
 	/* Re-initialize jiffy counter */
@@ -765,7 +846,7 @@ int thd_init(int mode) {
 #ifdef JIFFYLESS
 		thd_next_switch = timer_ms_gettime64() + 1000/HZ;
 #endif
-		timer_primary_wakeup(1000/HZ);
+		timer_primary_microwakeup(1000000/HZ);
 
 		printf("thd: pre-emption enabled, HZ=%d\n", HZ);
 	} else

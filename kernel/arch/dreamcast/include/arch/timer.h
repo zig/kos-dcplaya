@@ -66,6 +66,14 @@ void timer_ms_gettime(uint32 *secs, uint32 *msecs);
    in some situations. */
 uint64 timer_ms_gettime64();
 
+/* Return the number of ticks since KOS was booted (microseconds) */
+void timer_micro_gettime(uint32 *secs, uint32 *msecs, uint32 *micro);
+
+/* Does the same as timer_ms_gettime(), but it merges all three values
+   into a single 64-bit millisecond counter. May be more handy
+   in some situations. */
+uint64 timer_micro_gettime64();
+
 /* Set the callback target for the primary timer. Set to NULL
    to disable callbacks. Returns the address of the previous
    handler. */
@@ -76,6 +84,11 @@ timer_primary_callback_t timer_primary_set_callback(timer_primary_callback_t cal
    simultaneous wakeup. Any subsequent calls here will replace any 
    pending wakeup. */
 void timer_primary_wakeup(uint32 millis);
+
+/* Request a wakeup in approximately N milliseconds. You only get one
+   simultaneous wakeup. Any subsequent calls here will replace any 
+   pending wakeup. (microseconds) */
+void timer_primary_microwakeup(uint64 micro);
 
 /* Init function */
 int timer_init();

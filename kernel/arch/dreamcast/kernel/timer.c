@@ -75,6 +75,30 @@ static int timer_prime_wait(int which, uint32 millis, int interrupts) {
 	return 0;
 }
 
+/* Works like timer_prime, but takes an interval in milliseconds
+   instead of a rate. Used by the primary timer stuff. */
+static int timer_prime_microwait(int which, uint64 micro, 
+				 int interrupts) {
+	/* Calculate the countdown, formula is P0 * micro/64000000. We
+	   rearrange the math a bit here to avoid integer overflows. */
+	uint32 cd = (50000 / 64) * micro / 1000;
+
+	/* P0/64 scalar, maybe interrupts */
+	if (interrupts)
+		TIMER16(tcrs[which]) = 32 | 2;
+	else
+		TIMER16(tcrs[which]) = 2;
+
+	/* Initialize counters */
+	TIMER32(tcnts[which]) = cd;
+	TIMER32(tcors[which]) = cd;
+	
+	if (interrupts)
+		timer_enable_ints(which);
+	
+	return 0;
+}
+
 /* Start a timer -- starts it running (and interrupts if applicable) */
 int timer_start(int which) {
 	TIMER8(TSTR) |= 1 << which;
@@ -188,12 +212,48 @@ uint64 timer_ms_gettime64() {
 	return msec;
 }
 
+/* Return the number of ticks since KOS was booted
+   (include microseconds) */
+void timer_micro_gettime(uint32 *secs, uint32 *msecs, uint32 *micro) {
+	uint32 used, milli;
+
+	/* Seconds part comes from ms_counter */
+	if (secs)
+		*secs = timer_ms_counter;
+
+	/* Milliseconds, we check how much of the timer has elapsed */
+	assert( timer_ms_countdown > 0 );
+	used = timer_ms_countdown - timer_count(TMU2);
+	milli = used * 1000 / timer_ms_countdown;
+	if (msecs) {
+	  *msecs = milli;
+	}
+
+	/* Microseconds, same as above */
+	if (micro) {
+		assert( timer_ms_countdown > 0 );
+		used = timer_ms_countdown - timer_count(TMU2);
+		*micro = used * 10000 / (timer_ms_countdown / 100)
+		  - milli*1000;
+	}
+}
+
+uint64 timer_micro_gettime64() {
+	uint32 s, ms, micro;
+	uint64 msec;
+
+	timer_micro_gettime(&s, &ms, &micro);
+	msec = ((uint64)s) * 1000000 + ((uint64)ms*1000) + micro;
+
+	return msec;
+}
+
 /* Primary kernel timer. What we'll do here is handle actual timer IRQs
    internally, and call the callback only after the appropriate number of
    millis has passed. For the DC you can't have timers spaced out more
    than about one second, so we emulate longer waits with a counter. */
 static timer_primary_callback_t tp_callback;
-static uint32 tp_ms_remaining;
+static uint64 tp_ms_remaining;
 
 /* IRQ handler for the primary timer interrupt. */
 static void tp_handler(irq_t src, irq_context_t * cxt) {
@@ -208,16 +268,16 @@ static void tp_handler(irq_t src, irq_context_t * cxt) {
 		if (tp_callback)
 			tp_callback(cxt);
 	} /* Do we have less than a second remaining? */
-	else if (tp_ms_remaining < 1000) {
+	else if (tp_ms_remaining < 1000000) {
 		/* Schedule a "last leg" timer. */
 		timer_stop(TMU0);
-		timer_prime_wait(TMU0, tp_ms_remaining, 1);
+		timer_prime_microwait(TMU0, tp_ms_remaining, 1);
 		timer_clear(TMU0);
 		timer_start(TMU0);
 		tp_ms_remaining = 0;
 	} /* Otherwise, we're just counting down. */
 	else {
-		tp_ms_remaining -= 1000;
+		tp_ms_remaining -= 1000000;
 	}
 }
 
@@ -260,9 +320,35 @@ void timer_primary_wakeup(uint32 millis) {
 		timer_prime_wait(TMU0, 1000, 1);
 		timer_clear(TMU0);
 		timer_start(TMU0);
-		tp_ms_remaining = millis - 1000;
+		tp_ms_remaining = 1000*millis - 1000000;
 	} else {
 		timer_prime_wait(TMU0, millis, 1);
+		timer_clear(TMU0);
+		timer_start(TMU0);
+		tp_ms_remaining = 0;
+	}
+}
+
+void timer_primary_microwakeup(uint64 millis) {
+	/* Don't allow zero */
+	if (millis == 0) {
+		assert_msg( millis != 0, "Received invalid wakeup delay" );
+		millis++;
+	}
+
+	/* Make sure we stop any previous wakeup */
+	timer_stop(TMU0);
+
+	/* If we have less than a second to wait, then just schedule the
+	   timeout event directly. Otherwise schedule a periodic second
+	   timer. We'll replace this on the last leg in the IRQ. */
+	if (millis >= 1000000) {
+		timer_prime_wait(TMU0, 1000, 1);
+		timer_clear(TMU0);
+		timer_start(TMU0);
+		tp_ms_remaining = millis - 1000000;
+	} else {
+		timer_prime_microwait(TMU0, millis, 1);
 		timer_clear(TMU0);
 		timer_start(TMU0);
 		tp_ms_remaining = 0;

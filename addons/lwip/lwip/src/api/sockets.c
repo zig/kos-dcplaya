@@ -460,7 +460,7 @@ lwip_recv(int s, void *mem, int len, unsigned int flags)
 }
 /*-----------------------------------------------------------------------------------*/
 int
-lwip_send(int s, void *data, int size, unsigned int flags)
+lwip_send(int s, const void *data, int size, unsigned int flags)
 {
   struct lwip_socket *sock;
   struct netbuf *buf;
@@ -513,7 +513,7 @@ lwip_send(int s, void *data, int size, unsigned int flags)
 }
 /*-----------------------------------------------------------------------------------*/
 int
-lwip_sendto(int s, void *data, int size, unsigned int flags,
+lwip_sendto(int s, const void *data, int size, unsigned int flags,
        struct sockaddr *to, socklen_t tolen)
 {
   struct lwip_socket *sock;
@@ -593,7 +593,7 @@ lwip_socket(int domain, int type, int protocol)
 }
 /*-----------------------------------------------------------------------------------*/
 int
-lwip_write(int s, void *data, int size)
+lwip_write(int s, const void *data, int size)
 {
    return lwip_send(s, data, size, 0);
 }

@@ -127,6 +127,7 @@ static void handler_irq9(irq_t source, irq_context_t *context) {
 	int	reg, i;
 	vuint32	*asicack = (vuint32*)0xa05f6900;
 	uint32	mask;
+	int     hnd = 0;
 
 	/* Go through each event register and look for pending events */
 	for (reg=0; reg<3; reg++) {
@@ -138,10 +139,15 @@ static void handler_irq9(irq_t source, irq_context_t *context) {
 			if (mask & (1 << i)) {
 				if (asic_evt_handlers[reg][i] != NULL) {
 					asic_evt_handlers[reg][i]( (reg << 8) | i );
+					hnd = 1;
 				}
 			}
 		}
+/* 		if (mask && !hnd && */
+/* 		    (reg!=0 || (mask&~0x40000000))) */
+/* 		  dbglog(DBG_KDEBUG, "asic: spurious interrupt, reg %d, mask %08x\n", reg, mask); */
 	}
+	
 }
 
 

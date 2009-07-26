@@ -18,6 +18,15 @@ __BEGIN_DECLS
 #define QACR0 (*(volatile unsigned int *)(void *)0xff000038)
 #define QACR1 (*(volatile unsigned int *)(void *)0xff00003c)
 
+/* VP : 
+   This is a flag telling us if a thread is currently using store queues.
+   This flag can be used by other threads or by irqs to decide if it is
+   safe to use store queues or not */
+extern int sq_inuse;
+
+#define sq_lock() sq_inuse = 1
+#define sq_unlock() sq_inuse = 0
+
 /* clears n bytes at dest, dest must be 32-byte aligned */
 void sq_clr(void *dest, int n);
 

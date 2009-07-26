@@ -655,6 +655,7 @@ int la_init() {
 /* Shutdown */
 int la_shutdown() {
 	la_if_shutdown(&la_if);
+	net_unreg_device(&la_if);
 	return 0;
 }
 

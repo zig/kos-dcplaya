@@ -95,6 +95,10 @@ int genwait_wait(void * obj, const char * mesg, int timeout, void (*callback)(vo
 	/* Insert us on the appropriate wait queue */
 	TAILQ_INSERT_TAIL(&slpque[LOOKUP(obj)], me, thdq);
 
+	/* VP : added localtime update */
+	me->localtime += 
+	  timer_micro_gettime64() - me->localtime_ref;
+
 	/* Block us until we're signaled */
 	rv = thd_block_now(&me->context);
 

@@ -119,8 +119,8 @@ int dbgio_write_str(const char *str) {
 static char printf_buf[1024];
 static spinlock_t lock = SPINLOCK_INITIALIZER;
 
-int dbgio_printf(const char *fmt, ...) {
-	va_list args;
+/* VP : added this */
+int dbgio_vprintf(const char *fmt, va_list args) {
 	int i;
 
 	/* XXX This isn't correct. We could be inside an int with IRQs
@@ -129,15 +129,22 @@ int dbgio_printf(const char *fmt, ...) {
 	if (!irq_inside_int())
 		spinlock_lock(&lock);
 
-	va_start(args, fmt);
 	i = vsprintf(printf_buf, fmt, args);
-	va_end(args);
 
 	dbgio_write_str(printf_buf);
 
 	if (!irq_inside_int())
 		spinlock_unlock(&lock);
 
+	return i;
+}
+
+int dbgio_printf(const char *fmt, ...) {
+        int i;
+	va_list args;
+	va_start(args, fmt);
+	i = dbgio_vprintf(fmt, args);
+	va_end(args);
 	return i;
 }
 

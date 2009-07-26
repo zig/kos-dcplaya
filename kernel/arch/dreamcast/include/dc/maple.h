@@ -20,12 +20,12 @@ __BEGIN_DECLS
 
 /* Enabling this line will add massive amounts of processing time
    to the maple system, but it can verify DMA errors */
-#define MAPLE_DMA_DEBUG	0
+#define MAPLE_DMA_DEBUG	1
 
 /* Enabling this will turn on intra-interrupt debugging messages, which
    can cause problems if you're using a dc-load console rather than raw
    serial output. Disable for normal usage. */
-#define MAPLE_IRQ_DEBUG 0
+#define MAPLE_IRQ_DEBUG 1
 
 /* Maple Bus registers */
 #define MAPLE_BASE	0xa05f6c00

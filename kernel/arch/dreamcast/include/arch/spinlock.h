@@ -29,6 +29,19 @@ typedef volatile int spinlock_t;
 /* Note here that even if threads aren't enabled, we'll still set the
    lock so that it can be used for anti-IRQ protection (e.g., malloc) */
 
+/* VP : added that */
+/* Try to lock, set B to 1 if success */
+#define spinlock_trylock(A, B) do { \
+	spinlock_t * __lock = A; \
+	int __gotlock = 0; \
+		asm volatile ("tas.b @%1\n\t" \
+			      "movt %0\n\t" \
+				: "=r" (__gotlock) : "r" (__lock) : "t", "memory"); \
+		if (!__gotlock) \
+			B=0; \
+		else B=1; \
+} while (0)
+
 /* Spin on a lock */
 #define spinlock_lock(A) do { \
 	spinlock_t * __lock = A; \

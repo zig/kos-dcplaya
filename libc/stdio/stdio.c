@@ -235,7 +235,10 @@ size_t fread(void *ptr, size_t size, size_t nmemb, FILE *file) {
 
 int fgetc(FILE *file) {
 	unsigned char ch;
-	if (!fread(&ch, 1, 1, file)) {
+
+	/* VP : fixed this */
+	/* if (!fread(&ch, 1, 1, file)) { */
+	if (fread(&ch, 1, 1, file) <= 0) {
 		return EOF;
 	}
 	return (int)ch;

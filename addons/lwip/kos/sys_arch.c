@@ -90,8 +90,10 @@ sys_thread_t sys_thread_new(void (* function)(void *arg), void *arg, int prio) {
 	thread->arg = arg;
 
 	thread->thd = thd_create(thread_start, thread);
-	//thd_set_prio(thread->thd, PRIO_DEFAULT - 1);
 	assert_msg(thread->thd != NULL, "Couldn't create a new lwIP thread");
+	thread->thd->prio2 = 9;
+	thd_set_label(thread->thd, "Lwip-thd");
+	thd_set_prio(thread->thd, PRIO_DEFAULT + 1);
 
 	return thread;
 }

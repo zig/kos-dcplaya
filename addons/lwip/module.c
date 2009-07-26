@@ -40,10 +40,10 @@ static const char * sources[] = {
 int lwip_kos_init() {
 	netcfg_t cfg;
 
-	if (netcfg_load(&cfg) < 0) {
-		printf("net_lwip: can't load config -- giving up!\n");
-		return -1;
-	}
+/* 	if (netcfg_load(&cfg) < 0) { */
+/* 		printf("net_lwip: can't load config -- giving up!\n"); */
+/* 		return -1; */
+/* 	} */
 
 #define SETIP(target, src) \
 	IP4_ADDR(target, \
@@ -54,12 +54,12 @@ int lwip_kos_init() {
 
 	printf("net_lwip: initializing, ip %08lx mask %08lx gw %08lx src %s\n",
 		cfg.ip, cfg.netmask, cfg.gateway, sources[cfg.src]);
-	/* IP4_ADDR(&dfl_ip, 10,3,2,6);
+	IP4_ADDR(&dfl_ip, 192,168,1,9);
 	IP4_ADDR(&dfl_nm, 255,255,255,0);
-	IP4_ADDR(&dfl_gw, 10,3,2,1); */
-	SETIP(&dfl_ip, cfg.ip);
-	SETIP(&dfl_nm, cfg.netmask);
-	SETIP(&dfl_gw, cfg.gateway);
+	IP4_ADDR(&dfl_gw, 192,168,1,2);
+/* 	SETIP(&dfl_ip, cfg.ip); */
+/* 	SETIP(&dfl_nm, cfg.netmask); */
+/* 	SETIP(&dfl_gw, cfg.gateway); */
 	lwip_init_all_static(&dfl_ip, &dfl_nm, &dfl_gw);
 
 	// nmmgr_handler_add(&ls.nmmgr);

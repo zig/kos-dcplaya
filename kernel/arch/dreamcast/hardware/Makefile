@@ -23,7 +23,7 @@ OBJS += video.o vblank.o
 # CPU-related
 OBJS += sq.o scif.o
 
-SUBDIRS = pvr network maple modem
+SUBDIRS = pvr network modem maple
 
 include $(KOS_BASE)/Makefile.prefab
 

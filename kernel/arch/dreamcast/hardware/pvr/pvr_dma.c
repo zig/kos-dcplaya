@@ -158,7 +158,8 @@ void pvr_dma_init() {
 	dma_cbdata = 0;
 
 	/* Hook the neccessary interrupts */
-	asic_evt_set_handler(ASIC_EVT_PVR_DMA, pvr_dma_irq_hnd);	asic_evt_enable(ASIC_EVT_PVR_DMA, ASIC_IRQ_DEFAULT);
+	asic_evt_set_handler(ASIC_EVT_PVR_DMA, pvr_dma_irq_hnd);
+	asic_evt_enable(ASIC_EVT_PVR_DMA, ASIC_IRQ_DEFAULT);
 }
 
 void pvr_dma_shutdown() {

@@ -27,7 +27,7 @@ __BEGIN_DECLS
 #define page_phys_base 0x8c010000
 
 /* Number of timer ticks per second */
-#define HZ		100
+#define HZ		1200
 
 /* Default thread stack size */
 #define THD_STACK_SIZE	8192

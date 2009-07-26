@@ -13,6 +13,8 @@
 #include "lwip/sio.h"
 #include "../lwip/src/netif/ppp/ppp.h"
 
+#define USE_KOSTCPIP
+
 static void callback(void *foo) {
 	printf("tcpip: init completed\n");
 	sem_signal((semaphore_t *)foo);
@@ -45,10 +47,13 @@ void pppLinkStatusCallback(void * ctx, int errCode, void * arg) {
 
 u32_t sys_jiffies() { return jiffies; }
 
+/* VP */
+#ifdef USE_KOSTCPIP
 err_t tcpip_callback(void (*f)(void *ctx), void *ctx) {
 	f(ctx);
 	return ERR_OK;
 }
+#endif
 
 int lwip_init_all_ppp() {
 	sys_init();
@@ -85,24 +90,29 @@ int lwip_init_all_static(struct ip_addr * i_ipaddr, struct ip_addr * i_netmask, 
 	udp_init();
 	tcp_init();
 
-	/* sem = sem_create(0);
+	sem = sem_create(0);
 
+/* VP */
+#ifndef USE_KOSTCPIP
 	tcpip_init(callback, sem);
 	sem_wait(sem);
 	sem_destroy(sem);
-	printf("lwip: TCP/IP initialized\n"); */
-
+	printf("lwip: TCP/IP initialized\n");
+#else
 	kti_init();
 	printf("lwip: KOS TCP/IP Sockets initialized\n");
+#endif
 
 	IP4_ADDR(&gw, 127,0,0,1);
 	IP4_ADDR(&ipaddr, 127,0,0,1);
 	IP4_ADDR(&netmask, 255,0,0,0);
+#ifdef USE_KOSTCPIP
 	netif_add(&ipaddr, &netmask, &gw, NULL, loopif_init, ip_input);
 	netif_set_default(netif_add(i_ipaddr, i_netmask, i_gw, NULL, kosnetif_init, ip_input));
-
-	// netif_add(&ipaddr, &netmask, &gw, NULL, loopif_init, tcpip_input);
-	// netif_set_default(netif_add(i_ipaddr, i_netmask, i_gw, NULL, kosnetif_init, tcpip_input));
+#else
+	netif_add(&ipaddr, &netmask, &gw, NULL, loopif_init, tcpip_input);
+	netif_set_default(netif_add(i_ipaddr, i_netmask, i_gw, NULL, kosnetif_init, tcpip_input));
+#endif
 
 	return 0;
 }

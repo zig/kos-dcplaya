@@ -9,6 +9,7 @@
 #include <string.h>
 #include <dc/maple.h>
 #include <arch/irq.h>
+#include <arch/cache.h>
 
 CVSID("$Id: maple_queue.c,v 1.2 2003/01/17 02:56:45 bardtx Exp $");
 
@@ -65,6 +66,10 @@ void maple_queue_flush() {
 		*last |= 0x80000000;
 
 		/* Start a DMA transfer */
+
+		/* VP : is it ok not to do that because we are in P2 area ? */
+		//dcache_flush_range(maple_state.dma_buffer, amt); /* VP : added that */
+
 		maple_dma_addr(maple_state.dma_buffer);
 		maple_dma_start();
 		maple_state.dma_in_progress = 1;

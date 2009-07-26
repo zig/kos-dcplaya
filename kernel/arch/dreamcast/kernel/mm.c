@@ -20,6 +20,8 @@
 
 CVSID("$Id: mm.c,v 1.4 2003/05/23 02:41:05 bardtx Exp $");
 
+#define MAIN_STACK_SIZE (64*1024)
+
 /* The end of the program is always marked by the '_end' symbol. So we'll
    longword-align that and add a little for safety. sbrk() calls will
    move up from there. */
@@ -43,9 +45,11 @@ void* sbrk(unsigned long increment) {
 		increment = (increment + 4) & ~3;
 	sbrk_base += increment;
 
-	if ( ((uint32)sbrk_base) >= (0x8d000000 - 65536) ) {
+	if ( ((uint32)sbrk_base) >= (0x8d000000 - MAIN_STACK_SIZE) ) {
 		dbglog(DBG_DEAD, "Requested sbrk_base %p, was %p, diff %lu\n",
 			sbrk_base, base, increment);
+		sbrk_base -= increment;
+		return ((void*)(-1));
 		panic("out of memory; about to run over kernel stack");
 	}
 	

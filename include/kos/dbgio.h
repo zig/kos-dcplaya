@@ -14,6 +14,7 @@
 __BEGIN_DECLS
 
 #include <arch/types.h>
+#include <stdarg.h>
 
 /// This struct represents a single dbgio interface. This should represent
 /// a generic pollable console interface. We will store an ordered list of
@@ -117,6 +118,9 @@ void dbgio_enable();
 
 /// Printf functionality
 int dbgio_printf(const char *fmt, ...) __printflike(1, 2);
+
+/// VP : added vfprintf functionality
+int dbgio_vprintf(const char *fmt, va_list args);
 
 __END_DECLS
 

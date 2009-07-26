@@ -86,6 +86,23 @@ typedef struct kthread {
 	/* Our errno variable */
 	/* XXX: Move to TLS */
 	int	thd_errno;
+
+        /* VP : Adding exceptions jmp_buf stack per task */
+#define EXPT_GUARD_STACK_SIZE 8
+        int  expt_guard_stack_pos;
+        char expt_jump_stack[EXPT_GUARD_STACK_SIZE][1024]; // FIXME : why 1024 ??
+
+        /* VP : new priority system. If prio2 is different from one, then
+	   the thread timer will need to have been hit prio2 times before
+	   the task is actually switched to another one */
+        int prio2;
+        int cur_prio2; /* Each time the timer tries to switch this task 
+			  out, this counter is decreased by one, if it 
+			  reaches 0, the task is actually switched out. */
+        int jiffies;   /* The thread local jiffies counter, 
+			  useful for stats OBSOLETE */
+        uint64 localtime; /* The thread locale microtimer */
+        uint64 localtime_ref; /* The thread locale microtimer reference */
 } kthread_t;
 
 /* Thread flag values */
@@ -197,6 +214,10 @@ int thd_set_mode(int mode);
 
 /* Wait for a thread to exit */
 int thd_wait(kthread_t * thd);
+
+/* VP : configurable stack size, you can change this just before
+   you create a thread to have the stack of the size you want ... */
+extern uint32 thd_default_stack_size;
 
 
 /* Init */

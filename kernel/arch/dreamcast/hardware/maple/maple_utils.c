@@ -156,7 +156,7 @@ void maple_sentinel_verify(const char * bufname, void * buffer, int bufsize) {
 	uint32 *b32;
 	
 	assert( bufsize % 4 == 0 );
-
+#if 1
 	b32 = ((uint32 *)buffer) - 512/4;
 	for (i=0; i<512/4; i++) {
 		if (b32[i] != 0xdeadbeef) {
@@ -174,5 +174,6 @@ void maple_sentinel_verify(const char * bufname, void * buffer, int bufsize) {
 			assert( 0 );
 		}
 	}
+#endif
 }
 #endif

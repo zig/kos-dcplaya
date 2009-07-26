@@ -13,3 +13,9 @@ void usleep(unsigned long usec) {
 	thd_sleep (usec / 1000);
 }
 
+/* VP : added that */
+/* sleep() */
+void sleep(unsigned long sec) {
+	thd_sleep (sec / 1000000);
+}
+

@@ -268,9 +268,9 @@ static struct pbuf * pkt_deq() {
 
 	avgtime = (avgtime + (timer_ms_gettime64() - p->arrival)) / 2;
 	total_cnt++;
-	if (!(total_cnt % 100)) {
-		printf("%d packets received, avg latency %lu msec\n", total_cnt, (uint32)avgtime);
-	}
+/* 	if (!(total_cnt % 100)) { */
+/* 		printf("%d packets received, avg latency %lu msec\n", total_cnt, (uint32)avgtime); */
+/* 	} */
 	rv = low_level_input(p->pkt, p->len);
 	
 	pkt_q_tail = (pkt_q_tail + 1) % PKT_QUEUE_SIZE;
@@ -333,8 +333,14 @@ static int knet_input_low(netif_t * dev, const uint8 * pkt, int pktlen) {
 		return -1;
 
 	if (pkt_q_cnt >= PKT_QUEUE_SIZE) {
-		dbglog(DBG_ERROR, "kosnetif_input: lagging\n");
+	        //dbglog(DBG_ERROR, "kosnetif_input: lagging\n");
 		return 0;
+	}
+
+	/* VP */
+	int i;
+	for (i=0; i<ETH_THD_CNT; i++) {
+	  thd_schedule_next(eth_thd[i]);
 	}
 
 	pkt_enq(pkt, pktlen);
@@ -395,8 +401,11 @@ err_t kosnetif_init(struct netif *netif_ptr) {
 
 	low_input_init();
 	for (i=0; i<ETH_THD_CNT; i++) {
+	        char buf[64];
+		sprintf(buf, "Lwip-netif-%d-thd", i);
 		eth_thd[i] = thd_create(kosnetif_thread, NULL);
-	//	thd_set_prio(eth_thd[i], PRIO_DEFAULT-2);
+		thd_set_prio(eth_thd[i], PRIO_DEFAULT-2);
+		thd_set_label(eth_thd[i], buf);
 	}
 	oldfunc = net_input_set_target(knet_input_low);
 

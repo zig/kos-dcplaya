@@ -12,6 +12,27 @@
 int stricmp(const char * cs,const char * ct) {
 	int c1, c2, res;
 
+	/* $$$ ben : This was bugged ! I fix it. */
+	do {
+		c1 = *cs++; c2 = *ct++;
+		if (c1 >= 'A' && c1 <= 'Z') c1 += 'a' - 'A';
+		if (c2 >= 'A' && c2 <= 'Z') c2 += 'a' - 'A';
+		res = c1 - c2;
+	} while (!res && c1 && c2);
+
+	return res;
+}
+
+/* Also provides strcasecmp (same thing) */
+int strcasecmp(const char *cs, const char *ct) {
+	return stricmp(cs, ct);
+}
+
+#if 0
+/* Works like strcmp, but not case sensitive */
+int stricmp(const char * cs,const char * ct) {
+	int c1, c2, res;
+
 	while(1) {
 		c1 = *cs++; c2 = *ct++;
 		if (c1 >= 'A' && c1 <= 'Z') c1 += 'a' - 'A';
@@ -27,3 +48,4 @@ int stricmp(const char * cs,const char * ct) {
 int strcasecmp(const char *cs, const char *ct) {
 	return stricmp(cs, ct);
 }
+#endif

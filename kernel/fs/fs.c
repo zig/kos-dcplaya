@@ -537,6 +537,18 @@ int fs_rmdir(const char * fn) {
 	}
 }
 
+/* VP : Backward compatibility */
+int fs_handler_add(const char * name, vfs_handler_t * h)
+{
+  return nmmgr_handler_add((nmmgr_handler_t *) h);
+}
+
+int fs_handler_remove(vfs_handler_t * h)
+{
+  return nmmgr_handler_remove((nmmgr_handler_t *) h);
+}
+
+
 
 /* Initialize FS structures */
 int fs_init() {

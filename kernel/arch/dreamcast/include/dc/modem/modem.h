@@ -20,7 +20,7 @@
 #ifndef __DC_MODEM_MODEM_H
 #define __DC_MODEM_MODEM_H
 
-#include "mconst.h"
+#include <dc/modem/mconst.h>
 
 #define MODEM_MODE_REMOTE 0   /* Dial a remote computer */
 #define MODEM_MODE_DIRECT 1   /* Wait for a handshake signal */

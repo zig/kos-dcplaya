@@ -13,6 +13,9 @@ volatile int kosh_exit = 0;
 
 int (*oldprintf)(const char *fmt, ...);
 
+
+KOS_INIT_ROMDISK(KOS_INIT_ROMDISK_NONE);
+
 KOS_INIT_FLAGS(INIT_DEFAULT | INIT_MALLOCSTATS);
 
 /* get all our abi's and then start our main loop */
@@ -22,8 +25,8 @@ int main(int argc, char **argv) {
 	printf("kosh starting\n");
 
 	/* initalize the conio service */
-	conio_init(CONIO_TTY_PVR, CONIO_INPUT_LINE);
-	/* conio_init(CONIO_TTY_SERIAL, CONIO_INPUT_LINE); */
+	//conio_init(CONIO_TTY_PVR, CONIO_INPUT_LINE);
+	conio_init(CONIO_TTY_SERIAL, CONIO_INPUT_LINE);
 
 	conio_printf("   **** KOSH v1.4, The KallistiOS Shell ****\n");
 

@@ -32,7 +32,34 @@ CVSID("$Id: g2bus.c,v 1.5 2003/02/14 06:33:47 bardtx Exp $");
    The following paired macros will take the necessary precautions.
  */
 
+#define DMAC_CHCR1 *((vuint32 *)0xffa0001c)
 #define DMAC_CHCR3 *((vuint32 *)0xffa0003c)
+
+#if 0
+
+/* VP : this version stores also CHCR1 state and stop it, which could be 
+   necessary when the BBA is using DMA. However it doesn't seem to make 
+   any difference so I removed it for now */
+#define G2_LOCK(OLD1, OLD2) \
+	do { \
+		OLD1 = irq_disable(); \
+		/* suspend any G2 DMA here... */ \
+		OLD2 = (DMAC_CHCR3&0xffff) + (DMAC_CHCR1 <<16); \
+		DMAC_CHCR3 = (OLD2&0xffff) & ~1; \
+		DMAC_CHCR1 = (OLD2>>16) & ~1; \
+		while((*(vuint32 *)0xa05f688c) & 0x20) \
+			; \
+	} while(0)
+
+#define G2_UNLOCK(OLD1, OLD2) \
+	do { \
+		/* resume any G2 DMA here... */ \
+		DMAC_CHCR3 = (OLD2&0xffff); \
+		DMAC_CHCR1 = (OLD2>>16); \
+		irq_restore(OLD1); \
+	} while(0)
+
+#else
 
 #define G2_LOCK(OLD1, OLD2) \
 	do { \
@@ -50,13 +77,14 @@ CVSID("$Id: g2bus.c,v 1.5 2003/02/14 06:33:47 bardtx Exp $");
 		DMAC_CHCR3 = OLD2; \
 		irq_restore(OLD1); \
 	} while(0)
+#endif
 
 /* Always use these functions to access G2 bus memory (includes the SPU
    and the expansion port, e.g., BBA) */
 
 /* Read one byte from G2 */
 uint8 g2_read_8(uint32 address) {
-	int old1, old2;
+	uint32 old1, old2;
 	uint8 out;
 
 	G2_LOCK(old1, old2);
@@ -68,7 +96,7 @@ uint8 g2_read_8(uint32 address) {
 
 /* Write one byte to G2 */
 void g2_write_8(uint32 address, uint8 value) {
-	int old1, old2;
+	uint32 old1, old2;
 
 	G2_LOCK(old1, old2);
 	*((vuint8*)address) = value;
@@ -77,7 +105,7 @@ void g2_write_8(uint32 address, uint8 value) {
 
 /* Read one word from G2 */
 uint16 g2_read_16(uint32 address) {
-	int old1, old2;
+	uint32 old1, old2;
 	uint16 out;
 
 	G2_LOCK(old1, old2);
@@ -89,7 +117,7 @@ uint16 g2_read_16(uint32 address) {
 
 /* Write one word to G2 */
 void g2_write_16(uint32 address, uint16 value) {
-	int old1, old2;
+	uint32 old1, old2;
 
 	G2_LOCK(old1, old2);
 	*((vuint16*)address) = value;
@@ -98,7 +126,7 @@ void g2_write_16(uint32 address, uint16 value) {
 
 /* Read one dword from G2 */
 uint32 g2_read_32(uint32 address) {
-	int old1, old2;
+	uint32 old1, old2;
 	uint32 out;
 
 	G2_LOCK(old1, old2);
@@ -110,7 +138,7 @@ uint32 g2_read_32(uint32 address) {
 
 /* Write one dword to G2 */
 void g2_write_32(uint32 address, uint32 value) {
-	int old1, old2;
+	uint32 old1, old2;
 
 	G2_LOCK(old1, old2);
 	*((vuint32*)address) = value;
@@ -120,7 +148,7 @@ void g2_write_32(uint32 address, uint32 value) {
 /* Read a block of 8-bit values from G2 */
 void g2_read_block_8(uint8 * output, uint32 address, int amt) {
 	const vuint8 * input = (const vuint8 *)address;
-	int old1, old2;
+	uint32 old1, old2;
 
 	G2_LOCK(old1, old2);
 
@@ -134,7 +162,7 @@ void g2_read_block_8(uint8 * output, uint32 address, int amt) {
 /* Write a block 8-bit values to G2 */
 void g2_write_block_8(const uint8 * input, uint32 address, int amt) {
 	vuint8 * output = (vuint8 *)address;
-	int old1, old2;
+	uint32 old1, old2;
 
 	G2_LOCK(old1, old2);
 
@@ -148,7 +176,7 @@ void g2_write_block_8(const uint8 * input, uint32 address, int amt) {
 /* Read a block of 16-bit values from G2 */
 void g2_read_block_16(uint16 * output, uint32 address, int amt) {
 	const vuint16 * input = (const vuint16 *)address;
-	int old1, old2;
+	uint32 old1, old2;
 
 	G2_LOCK(old1, old2);
 
@@ -162,7 +190,7 @@ void g2_read_block_16(uint16 * output, uint32 address, int amt) {
 /* Write a block of 16-bit values to G2 */
 void g2_write_block_16(const uint16 * input, uint32 address, int amt) {
         vuint16 * output = (vuint16 *)address;
-	int old1, old2;
+	uint32 old1, old2;
 
 	G2_LOCK(old1, old2);
 
@@ -176,7 +204,7 @@ void g2_write_block_16(const uint16 * input, uint32 address, int amt) {
 /* Read a block of 32-bit values from G2 */
 void g2_read_block_32(uint32 * output, uint32 address, int amt) {
 	const vuint32 * input = (const vuint32 *)address;
-	int old1, old2;
+	uint32 old1, old2;
 
 	G2_LOCK(old1, old2);
 
@@ -190,7 +218,7 @@ void g2_read_block_32(uint32 * output, uint32 address, int amt) {
 /* Write a block of 32-bit values to G2 */
 void g2_write_block_32(const uint32 * input, uint32 address, int amt) {
 	vuint32 * output = (vuint32 *)address;
-	int old1, old2;
+	uint32 old1, old2;
 
 	G2_LOCK(old1, old2);
 

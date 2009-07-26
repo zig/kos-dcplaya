@@ -47,6 +47,42 @@ int sprintf(char *out, const char *fmt, ...) {
 }
 
 
+/* VP : added these ones */
+int vprintf(const char * f, va_list args)
+{
+  int i;
+  spinlock_lock(&mutex);
+  i = vsprintf(printf_buf, f, args);
+  dbgio_write_str(printf_buf);
+  spinlock_unlock(&mutex);
+  return i;
+}
+
+int vfprintf(FILE * fp, const char * f, va_list args)
+{
+  return vprintf(f, args);
+}
+
+int vsnprintf(char * out, size_t s, const char * f, va_list args)
+{
+  return vsprintf(out, f, args);
+}
+
+int snprintf(char * buf, size_t s, const char * f, ...)
+{
+  int i;
+  va_list args;
+  va_start(args, f);
+/*   printf("SNPRINTF: "); */
+/*   vprintf(f, args); */
+  vsprintf(buf, f, args);
+  va_end(args);
+  return i;
+}
+/* VP : end of addition */
+
+
+
 /* Default kernel debug log level: if a message has a level higher than this,
    it won't be shown. Set to DBG_DEAD to see basically nothing, and set to
    DBG_KDEBUG to see everything. DBG_INFO is generally a decent level. */

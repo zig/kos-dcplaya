@@ -6,7 +6,9 @@
 # $Id: Makefile,v 1.1 2002/01/30 02:30:20 bardtx Exp $
 
 # Various network devices
-OBJS = broadband_adapter.o lan_adapter.o
+
+# VP moved into net plugin of dcplaya
+OBJS = # broadband_adapter.o lan_adapter.o
 
 SUBDIRS =
 

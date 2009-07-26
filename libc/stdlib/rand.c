@@ -23,3 +23,7 @@ int rand() {
 	return seed & RAND_MAX;
 }
 
+/* VP : added that */
+long random() {
+  return rand();
+}
