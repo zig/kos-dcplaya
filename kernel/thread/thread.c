@@ -40,7 +40,7 @@ also using their queue library verbatim (sys/queue.h).
 /* Thread scheduler data */
 
 /* Thread list. This includes all threads except dead ones. */
-static struct ktlist thd_list;
+struct ktlist thd_list;
 
 /* Run queue. This is more like on a standard time sharing system than the
    previous versions. The top element of this priority queue should be the
@@ -49,7 +49,7 @@ static struct ktlist thd_list;
    by its priority value at the end of its priority group. Note that right
    now this condition is being broken because sleeping threads are on the
    same queue. We deal with those in thd_switch below. */
-static struct ktqueue run_queue;
+struct ktqueue run_queue;
 
 /* "Jiffy" count: this is basically a counter that gets incremented each
    time a timer interrupt happens. XXX: Deprecated. */

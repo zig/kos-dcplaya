@@ -15,7 +15,7 @@ export KOS_BASE=`pwd`
 export KOS_ARCH="dreamcast"
 
 # Compiler base strings
-export KOS_CC_BASE="/usr/local/cross-tools/sh-elf"
+export KOS_CC_BASE="/opt/sh-dc-elf-4.4.1/"
 export PATH=${PATH}:${KOS_CC_BASE}/bin
 export KOS_CC_PREFIX="sh-dc-elf"
 

@@ -255,7 +255,7 @@ void arch_menu() {
 	/* Jump to the menus */
 	dbglog(DBG_CRITICAL, "arch: exiting the system to the BIOS menu\n");
 
-	{ void (*menu)(int) __noreturn; ((uint32 *)menu) = *((uint32 *)0x8c0000e0); menu(1); }
+	{ void (*menu)(int) __noreturn; menu = (void *) *((uint32 *)0x8c0000e0); menu(1); }
 }
 
 /* Called to shut down non-gracefully; assume the system is in peril
@@ -291,7 +291,7 @@ void arch_reboot() {
 	irq_disable();
 
 	/* Reboot */
-	{ void (*rb)() __noreturn; ((uint32*)rb) = (uint32 *)0xa0000000; rb(); }
+	{ void (*rb)() __noreturn; rb = (void *) (uint32 *)0xa0000000; rb(); }
 }
 
 /* When you make a function called main() in a GCC program, it wants
