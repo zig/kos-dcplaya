@@ -155,9 +155,6 @@ int arch_main() {
 	uint8 *bss_end = (uint8 *)(&end);
 	int rv;
 
-	/* Ensure that we pull in crtend.c in the linking process */
-	__crtend_pullin();
-
 	/* Ensure that UBC is not enabled from a previous session */
 	ubc_disable_all();
 
@@ -279,6 +276,9 @@ void arch_abort() {
 	/* Turn off any IRQs */	
 	irq_disable();
 	
+	/* Ensure that we pull in crtend.c in the linking process */
+	__crtend_pullin(NULL);
+
 	arch_real_exit();
 }
 

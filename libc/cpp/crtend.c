@@ -20,8 +20,10 @@ static fptr ctor_list[1] __attribute__((section(".ctors"))) = { (fptr) 0 };
 static fptr dtor_list[1] __attribute__((section(".dtors"))) = { (fptr) 0 };
 
 /* Ensures that this gets linked in */
-void __crtend_pullin() {
-	(void)ctor_list;
-	(void)dtor_list;
+void __crtend_pullin(void **p) {
+	if (p) {
+		p[0] = ctor_list;
+		p[1] = dtor_list;
+	}
 }
 
