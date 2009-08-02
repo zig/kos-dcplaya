@@ -164,11 +164,17 @@ int arch_main() {
 	/* Do auto-init stuff */
 	arch_auto_init();
 
+	printf("arch_auto_init DONE\n");
+
 	/* Run ctors */
 	arch_ctors();
 
+	printf("arch_ctors DONE\n");
+
 	/* Call the user's main function */
 	rv = main(0, NULL);
+
+	printf("main DONE\n");
 
 	/* Call kernel exit */
 	arch_exit();
