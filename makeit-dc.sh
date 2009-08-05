@@ -39,10 +39,12 @@ export KOS_AR="${KOS_CC_BASE}/bin/${KOS_CC_PREFIX}-ar"
 export KOS_OBJCOPY="${KOS_CC_BASE}/bin/${KOS_CC_PREFIX}-objcopy"
 export KOS_LD="${KOS_CC_BASE}/bin/${KOS_CC_PREFIX}-ld"
 export KOS_STRIP="${KOS_CC_BASE}/bin/${KOS_CC_PREFIX}-strip"
- --> for gcc 2.95
+# --> for gcc 2.95
 #export KOS_CFLAGS="-Wall -g -ml -m4-single-only -Os -fno-builtin -fno-strict-aliasing -fomit-frame-pointer"
 # --> for gcc 3.0.3
-export KOS_CFLAGS="-Wall -g -ml -m4-single-only -Os -fno-builtin -fno-strict-aliasing -fomit-frame-pointer -fno-optimize-sibling-calls"
+#export KOS_CFLAGS="-Wall -g -ml -m4-single-only -O3 -fno-builtin -fno-strict-aliasing -fomit-frame-pointer -fno-optimize-sibling-calls"
+# --> for gcc 4.4.1
+export KOS_CFLAGS="-Wall -g -ml -m4-single-only -O3 -fno-builtin -fno-strict-aliasing -fomit-frame-pointer"
 export KOS_CPPFLAGS="-fno-operator-names -fno-rtti -fno-exceptions"
 export KOS_AFLAGS="-little"
 export KOS_LDFLAGS="-g -ml -m4-single-only -nostartfiles -nostdlib -Wl,-Ttext=0x8c010000"

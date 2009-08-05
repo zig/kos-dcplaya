@@ -44,6 +44,8 @@ int dbgio_handler_cnt = sizeof(dbgio_handlers) / sizeof(dbgio_handler_t *);
    to be running in your build, and also below in arch_main() */
 /* #if 0 */
 int arch_auto_init() {
+	icache_flush_range(0x8c000000, 0x1000000);
+
 	/* Initialize memory management */
 	mm_init();
 

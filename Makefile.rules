@@ -10,7 +10,7 @@
 # Build rules
 %.o: %.c
 	mkdir -p `dirname $@`
-	$(KOS_CC) $(KOS_CFLAGS) -c $< -o $@
+	$(KOS_CC) $(KOS_CFLAGS) $(FIX_GCC_BUG) -c $< -o $@
 
 %.o: %.cc
 	mkdir -p `dirname $@`
